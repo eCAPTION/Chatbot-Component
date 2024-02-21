@@ -1,0 +1,7 @@
+git+https://github.com/eCAPTION/ecaption_utils.git
+telebot
+flask
+pyngrok
+linetimer
+requests
+pymongo

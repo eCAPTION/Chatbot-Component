@@ -1,0 +1,5 @@
+# Ignore IDE-related files
+.idea
+
+# Ignore Python intepreter-related files
+__pycache__
