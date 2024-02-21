@@ -5,3 +5,4 @@ pyngrok
 linetimer
 requests
 pymongo
+git-crypt
