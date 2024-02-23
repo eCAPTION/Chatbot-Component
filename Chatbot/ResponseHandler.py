@@ -13,7 +13,9 @@ def identify_instruction_type(instruction):
         prompt_instruction_type = f'Given the following instruction to modify an infographic: "{instruction}" Identify the type of operation specified in the instruction: ADD/DELETE/EDIT/MOVE.'
         output_instruction_type = query({
             "inputs": prompt_instruction_type,
-            "wait_for_model": True
+            "options": {
+                "wait_for_model": True
+            },
         })
 
     instruction_type = output_instruction_type[0]['generated_text']
@@ -37,7 +39,9 @@ def identify_target_element(instruction, instruction_type):
             prompt_target_element = f'Given the instruction, ({instruction}) Output the specific content or element that is moved within the infographic. Ensure that the answer does not include the target location of the element or text.'
         output_target_element = query({
             "inputs": prompt_target_element,
-            "wait_for_model": True
+            "options": {
+                "wait_for_model": True
+            },
         })
 
     target_element = output_target_element[0]['generated_text']
@@ -63,7 +67,9 @@ def identify_infographic_section(instruction, instruction_type):
         prompt_infographic_section = infographic_sections + task
         output_infographic_section = query({
             "inputs": prompt_infographic_section,
-            "wait_for_model": True
+            "options": {
+                "wait_for_model": True
+            },
         })
 
     infographic_section = output_infographic_section[0]['generated_text']
@@ -80,7 +86,9 @@ def identify_target_location(instruction):
         prompt_target_location = f'Identify the target location in the existing infographic where the new element should be placed based on the following user instruction: {{input}}'
         output_target_location = query({
             "inputs": prompt_target_location,
-            "wait_for_model": True
+            "options": {
+                "wait_for_model": True
+            },
         })
 
     target_location = output_target_location[0]['generated_text']
