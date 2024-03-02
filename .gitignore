@@ -6,3 +6,9 @@ __pycache__
 
 # Ignore git-crypt-key
 git-crypt-key
+
+# Ignore ecaption_utils files
+ecaption_utils_personal
+
+# Ignore debugging-related files
+MiddleMan.py

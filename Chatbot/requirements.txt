@@ -5,3 +5,6 @@ pyngrok
 linetimer
 requests
 pymongo
+black
+click
+kafka-python

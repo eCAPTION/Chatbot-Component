@@ -4,6 +4,7 @@ import CommonDbOperations
 import ResponseHandler
 from flask import Flask, request
 from pyngrok import ngrok
+import KafkaEventHandler
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -84,9 +85,15 @@ def callback_inline(call):
             sent = bot.send_message(call.message.chat.id, reply_message)
             bot.register_next_step_handler(sent, receive_comment)
 
-
+# TODO: Need to modify this function to only fetch for existing infographic link, and produce Kafka event. (lines 93-97)
+#       Will need to write another function to receive the new infographic link and send user this link, once Kafka event is received
 def receive_news_article(message):
-    link_to_infographic = CommonDbOperations.receive_news_article(database, message.chat.id, message.text)
+    request_id = CommonDbOperations.assign_request(database, message.chat.id)
+    if CommonDbOperations.check_if_news_article_document_exist(database, message.chat.id, message.text):
+        link_to_infographic = CommonDbOperations.receive_existing_news_article(database, message.chat.id, message.text)
+    else:
+        KafkaEventHandler.emit_article_url(message.text, request_id)
+        link_to_infographic = CommonDbOperations.receive_new_news_article(database, message.chat.id, message.text)
     reply_message = "This is the link to access the generated infographic: {}".format(link_to_infographic)
     bot.send_message(message.chat.id, reply_message)
 

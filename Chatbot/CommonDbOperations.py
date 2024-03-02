@@ -14,25 +14,39 @@ def startup_database():
     database = mongodb_client[config.DB_DATABASE_NAME]
     return database
 
-def receive_news_article(database, chat_id, news_article):
+def receive_existing_news_article(database, chat_id, news_article):
     news_articles_collection = database[config.DB_ARTICLES_COLLECTION_NAME]
+    existing_news_article_document = fetch_existing_news_article_document(chat_id, news_article,
+                                                                          news_articles_collection)
+    return existing_news_article_document['link_to_infographic']
 
-    existing_news_article_document = fetch_existing_news_article_document(chat_id, news_article, news_articles_collection)
-    if existing_news_article_document:
-        return existing_news_article_document['link_to_infographic']
+def receive_new_news_article(database, chat_id, news_article):
+    news_articles_collection = database[config.DB_ARTICLES_COLLECTION_NAME]
+    news_article_document = create_news_article_document(chat_id, news_article, news_articles_collection)
+    news_articles_collection.insert_one(news_article_document)
+    link_to_infographic = news_article_document['link_to_infographic']
+
+    infographics_collection = database[config.DB_INFOGRAPHICS_COLLECTION_NAME]
+    infographic_document = create_infographic_document(link_to_infographic)
+    infographics_collection.insert_one(infographic_document)
+    return link_to_infographic
+
+def check_if_news_article_document_exist(database, chat_id, news_article):
+    news_articles_collection = database[config.DB_ARTICLES_COLLECTION_NAME]
+    query = {
+        "chat_id": chat_id,
+        "article_link": news_article
+    }
+    news_article_document = news_articles_collection.find_one(query)
+    if news_article_document:
+        return True
     else:
-        news_article_document = create_news_article_document(chat_id, news_article)
-        news_articles_collection.insert_one(news_article_document)
-        link_to_infographic = news_article_document['link_to_infographic']
+        return False
 
-        infographics_collection = database[config.DB_INFOGRAPHICS_COLLECTION_NAME]
-        infographic_document = create_infographic_document(link_to_infographic)
-        infographics_collection.insert_one(infographic_document)
-        return link_to_infographic
-
-def create_news_article_document(chat_id, news_article_link):
+def create_news_article_document(chat_id, news_article_link, news_articles_collection):
     # TODO: Generate a unique link to access the infographic, after receiving the generated infographic
-    link_to_infographic = 'b'
+    current_article_count = news_articles_collection.count_documents({})
+    link_to_infographic = str(current_article_count + 1)
     news_article_document = {
         "chat_id": chat_id,
         "article_link": news_article_link,
@@ -153,3 +167,14 @@ def add_comment(database, link_to_infographic, comment):
         print("Document updated successfully!")
     else:
         print("Document not found or no changes made.")
+
+def assign_request(database, chat_id):
+    requests_collection = database[config.DB_REQUESTS_COLLECTION_NAME]
+    current_request_count = requests_collection.count_documents({})
+    allocated_request_id = current_request_count + 1
+    request_document = {
+        "chat_id": chat_id,
+        "request_id": allocated_request_id
+    }
+    requests_collection.insert_one(request_document)
+    return allocated_request_id
