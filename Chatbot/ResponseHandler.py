@@ -59,6 +59,26 @@ def identify_target_location_new(instruction):
     target_location = output_target_location[0]['generated_text']
     return target_location
 
+def identify_target_element_new_delete(instruction):
+    with CodeTimer('Identify Target Element', unit='s'):
+        headers = {"Authorization": f"Bearer {config.HUGGING_FACE_ACCESS_TOKEN}"}
+
+        def query(payload):
+            response = requests.post(config.TARGET_ELEMENT_NEW_DELETE_API_URL, headers=headers, json=payload)
+            return response.json()
+
+        prompt_target_element = f'Given the instruction, ({instruction}) Output the specific content or element that is deleted from the infographic.'
+        output_target_element = query({
+            "inputs": prompt_target_element,
+            "options": {
+                "wait_for_model": True
+            },
+        })
+
+    print(output_target_element)
+    target_element = output_target_element[0]['generated_text']
+    return target_element
+
 def identify_infographic_section_new(location):
     with CodeTimer('Identify Infographic Section', unit='s'):
         headers = {"Authorization": f"Bearer {config.HUGGING_FACE_ACCESS_TOKEN}"}
@@ -90,15 +110,21 @@ def remove_quotes(string):
 def generate_intermediate_representation(instruction):
     instruction_type = identify_instruction_type(instruction)
     intermediate_representation = f'Instruction Type: {instruction_type}\n'
-    target_element = identify_target_element_new(instruction)
-    intermediate_representation += f'Target Element: {target_element}\n'
-    target_location = identify_target_location_new(instruction)
-    intermediate_representation += f'Target Location: {target_location}\n'
-    infographic_section = identify_infographic_section_new(target_location)
-    intermediate_representation += f'Infographic Section: {infographic_section}\n'
+    if instruction_type == 'ADD':
+        target_element = identify_target_element_new(instruction)
+        intermediate_representation += f'Target Element: {target_element}\n'
+        target_location = identify_target_location_new(instruction)
+        intermediate_representation += f'Target Location: {target_location}\n'
+        infographic_section = identify_infographic_section_new(target_location)
+        intermediate_representation += f'Infographic Section: {infographic_section}\n'
+    elif instruction_type == 'DELETE':
+        target_element = identify_target_element_new_delete(instruction)
+        intermediate_representation += f'Target Element: {target_element}\n'
+        infographic_section = identify_infographic_section_new(target_element)
+        intermediate_representation += f'Infographic Section: {infographic_section}\n'
     return intermediate_representation
 
 if __name__ == '__main__':
-    instruction = "weave in an additional relevant fact close to the similar articles section"
+    instruction = "i want to add another relevant fact next to the area that shows the list of statements relevant to the article"
     intermediate_rep = generate_intermediate_representation(instruction)
     print(intermediate_rep)
