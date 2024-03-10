@@ -34,41 +34,6 @@ def emit_article_url(article_url, request_id):
     producer.close()
 
 
-@app.agent(topics[Topic.NEW_ARTICLE_URL])
-async def handle_article_url(event_stream):
-    async for event in event_stream:
-        article_text = event.url
-        print(f'This is the article text: {article_text}')
-        request_id = event.request_id
-        print(f'This is the request ID: {request_id}')
-
-
-@app.agent(topics[Topic.ADD_INSTRUCTION])
-async def handle_add_instruction(event_stream):
-    async for event in event_stream:
-        print('----------------DELETE_INSTRUCTION---------------')
-        request_id = event.request_id
-        print(f'This is the request ID: {request_id}')
-        infographic_link = event.infographic_link
-        print(f'This is the infographic link: {infographic_link}')
-        target_element = event.target_element
-        print(f'This is the target element: {target_element}')
-        infographic_section = event.infographic_section
-        print(f'This is the infographic section: {infographic_section}')
-
-
-@app.agent(topics[Topic.DELETE_INSTRUCTION])
-async def handle_delete_instruction(event_stream):
-    async for event in event_stream:
-        print('----------------DELETE_INSTRUCTION---------------')
-        request_id = event.request_id
-        print(f'This is the request ID: {request_id}')
-        infographic_link = event.infographic_link
-        print(f'This is the infographic link: {infographic_link}')
-        infographic_section = event.infographic_section
-        print(f'This is the infographic section: {infographic_section}')
-
-
 def emit_intermediate_representation(intermediate_representation, infographic_link, request_id):
     if intermediate_representation['instruction_type'] == 'ADD':
         emit_add_intermediate_representation(intermediate_representation['target_element'],
