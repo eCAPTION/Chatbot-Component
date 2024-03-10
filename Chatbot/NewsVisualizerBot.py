@@ -85,17 +85,20 @@ def callback_inline(call):
             sent = bot.send_message(call.message.chat.id, reply_message)
             bot.register_next_step_handler(sent, receive_comment)
 
-# TODO: Need to modify this function to only fetch for existing infographic link, and produce Kafka event. (lines 93-97)
-#       Will need to write another function to receive the new infographic link and send user this link, once Kafka event is received
 def receive_news_article(message):
-    request_id = CommonDbOperations.assign_request(database, message.chat.id)
-    if CommonDbOperations.check_if_news_article_document_exist(database, message.chat.id, message.text):
-        link_to_infographic = CommonDbOperations.receive_existing_news_article(database, message.chat.id, message.text)
+    if CommonDbOperations.check_if_news_article_infographic_exist(database, message.chat.id, message.text):
+        link_to_infographic = CommonDbOperations.send_existing_news_article_infographic(database, message.chat.id, message.text)
+        if link_to_infographic == '':
+            reply_message = f"I am still generating the infographic that you have previously requested for {message.text}"
+        else:
+            reply_message = "You have already generated an infographic for this news article, where you can view it here: {}".format(link_to_infographic)
+        bot.send_message(message.chat.id, reply_message)
     else:
+        CommonDbOperations.create_news_article_document(database, message.chat.id, message.text)
+        request_id = CommonDbOperations.assign_request_news_article(database, message.chat.id, message.text)
         KafkaEventHandler.emit_article_url(message.text, request_id)
-        link_to_infographic = CommonDbOperations.receive_new_news_article(database, message.chat.id, message.text)
-    reply_message = "This is the link to access the generated infographic: {}".format(link_to_infographic)
-    bot.send_message(message.chat.id, reply_message)
+        reply_message = '\U000023F3' + ' Please wait patiently while I generate your infographic ' + '\U000023F3'
+        bot.send_message(message.chat.id, reply_message)
 
 def receive_infographic(message):
     link_to_infographic = message.text
@@ -127,10 +130,11 @@ def receive_infographic_changes(message):
     if user_infographic is None:
         print('User has not entered an infographic link.')
     proposed_user_changes = message.text
-    processing_message = 'Generating instructions... ' + '\U000023F3'
+    request_id = CommonDbOperations.assign_request_infographic_changes(database, message.chat.id, user_infographic, proposed_user_changes)
+    processing_message = '\U000023F3' + ' Please wait patiently while I modify your infographic ' + '\U000023F3'
     bot.send_message(message.chat.id, processing_message)
     intermediate_representation = ResponseHandler.generate_intermediate_representation(proposed_user_changes)
-    bot.send_message(message.chat.id, intermediate_representation)
+    KafkaEventHandler.emit_intermediate_representation(intermediate_representation, user_infographic, request_id)
 
 def view_infographic_stats(message):
     link_to_infographic = message.text
@@ -164,6 +168,32 @@ def receive_comment(message):
     CommonDbOperations.add_comment(database, user_infographic, comment)
     reply_message = f"You have commented: {comment}"
     bot.send_message(message.chat.id, reply_message)
+
+def send_error_message_article_link(request_id, error_message):
+    startup_database()
+    request_document = CommonDbOperations.get_request(database, request_id)
+    chat_id = request_document["chat_id"]
+    reply_message = f'You have sent an invalid article link. The error is as follows:\n{error_message}'
+    bot.send_message(chat_id, reply_message)
+
+def send_new_infographic(request_id, infographic_link):
+    startup_database()
+    request_document = CommonDbOperations.get_request(database, request_id)
+    chat_id = request_document["chat_id"]
+    article_link = request_document["article_link"]
+    CommonDbOperations.add_infographic_to_article(database, chat_id, article_link, infographic_link)
+    reply_message = f"Great news! I've finished generating the infographic based on the news article ({article_link}) you linked.\nYou can check it out here: {infographic_link}"
+    bot.send_message(chat_id, reply_message)
+
+def send_modified_infographic(request_id, infographic_link):
+    startup_database()
+    request_document = CommonDbOperations.get_request(database, request_id)
+    chat_id = request_document["chat_id"]
+    old_infographic_link = request_document["infographic_link"]
+    instruction = request_document["user_instruction"]
+    CommonDbOperations.update_infographic_of_article(database, chat_id, old_infographic_link, infographic_link)
+    reply_message = f"All done! I've modified your infographic based on your instructions for the infographic you provided:\nInfographic Link: {old_infographic_link}\nInstruction: {instruction}\n-------------------------------\nCheck out the updated infographic here: {infographic_link}"
+    bot.send_message(chat_id, reply_message)
 
 def startup_database():
     global database

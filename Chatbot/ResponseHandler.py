@@ -109,19 +109,23 @@ def remove_quotes(string):
 
 def generate_intermediate_representation(instruction):
     instruction_type = identify_instruction_type(instruction)
-    intermediate_representation = f'Instruction Type: {instruction_type}\n'
+    intermediate_representation = {}
     if instruction_type == 'ADD':
         target_element = identify_target_element_new(instruction)
-        intermediate_representation += f'Target Element: {target_element}\n'
         target_location = identify_target_location_new(instruction)
-        intermediate_representation += f'Target Location: {target_location}\n'
         infographic_section = identify_infographic_section_new(target_location)
-        intermediate_representation += f'Infographic Section: {infographic_section}\n'
+        intermediate_representation = {
+            'instruction_type': instruction_type,
+            'target_element': target_element,
+            'infographic_section': infographic_section,
+        }
     elif instruction_type == 'DELETE':
         target_element = identify_target_element_new_delete(instruction)
-        intermediate_representation += f'Target Element: {target_element}\n'
         infographic_section = identify_infographic_section_new(target_element)
-        intermediate_representation += f'Infographic Section: {infographic_section}\n'
+        intermediate_representation = {
+            'instruction_type': instruction_type,
+            'infographic_section': infographic_section,
+        }
     return intermediate_representation
 
 if __name__ == '__main__':
