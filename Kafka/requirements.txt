@@ -1,0 +1,3 @@
+git+https://github.com/eCAPTION/ecaption_utils.git
+kafka-python
+python-dotenv

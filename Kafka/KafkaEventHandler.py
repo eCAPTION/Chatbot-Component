@@ -2,10 +2,18 @@ from ecaption_utils.kafka.faust import get_faust_app, FaustApplication, initiali
 from ecaption_utils.kafka.topics import Topic, get_event_type
 from kafka import KafkaProducer
 import re
-import config
-import NewsVisualizerBot
+from dotenv import load_dotenv
+import os
+import sys
+sys.path.append('../')
+from Chatbot import NewsVisualizerBot
 
-app = get_faust_app(FaustApplication.Chatbot, config.FAUST_APP_BROKER_URL, config.FAUST_APP_WEB_PORT)
+load_dotenv()
+
+faust_app_broker_url = os.getenv("FAUST_APP_BROKER_URL")
+chatbot_web_port = os.getenv("CHATBOT_WEB_PORT")
+
+app = get_faust_app(FaustApplication.Chatbot, faust_app_broker_url, chatbot_web_port)
 topics = initialize_topics(
     app,
     [

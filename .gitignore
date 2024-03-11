@@ -12,3 +12,6 @@ ecaption_utils_personal
 
 # Ignore debugging-related files
 MiddleMan.py
+
+# Ignore .env files
+.env

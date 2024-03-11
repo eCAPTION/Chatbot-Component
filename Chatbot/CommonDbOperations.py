@@ -1,30 +1,41 @@
 import pymongo
-import config
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+db_connection_string = os.getenv("DB_CONNECTION_STRING")
+db_admin_username = os.getenv("DB_ADMIN_USERNAME")
+db_admin_pw = os.getenv("DB_ADMIN_PW")
+db_database_name = os.getenv("DB_DATABASE_NAME")
+db_articles_collection_name = os.getenv("DB_ARTICLES_COLLECTION_NAME")
+db_infographics_collection_name = os.getenv("DB_INFOGRAPHICS_COLLECTION_NAME")
+db_requests_collection_name = os.getenv("DB_REQUESTS_COLLECTION_NAME")
 
 
 def startup_database():
     print("Initializing News Articles Database...")
 
     # Initialise MongoDB cluster
-    mongodb_connection_url = config.DB_CONNECTION_STRING.format(
-        config.DB_ADMIN_USERNAME,
-        config.DB_ADMIN_PW
+    mongodb_connection_url = db_connection_string.format(
+        db_admin_username,
+        db_admin_pw
     )
     mongodb_client = pymongo.MongoClient(mongodb_connection_url)
 
-    database = mongodb_client[config.DB_DATABASE_NAME]
+    database = mongodb_client[db_database_name]
     return database
 
 
 def send_existing_news_article_infographic(database, chat_id, news_article):
-    news_articles_collection = database[config.DB_ARTICLES_COLLECTION_NAME]
+    news_articles_collection = database[db_articles_collection_name]
     existing_news_article_document = fetch_existing_news_article_document(chat_id, news_article,
                                                                           news_articles_collection)
     return existing_news_article_document['link_to_infographic']
 
 
 def check_if_news_article_infographic_exist(database, chat_id, news_article):
-    news_articles_collection = database[config.DB_ARTICLES_COLLECTION_NAME]
+    news_articles_collection = database[db_articles_collection_name]
     query = {
         "chat_id": chat_id,
         "article_link": news_article
@@ -37,7 +48,7 @@ def check_if_news_article_infographic_exist(database, chat_id, news_article):
 
 
 def create_news_article_document(database, chat_id, news_article_link):
-    news_articles_collection = database[config.DB_ARTICLES_COLLECTION_NAME]
+    news_articles_collection = database[db_articles_collection_name]
     news_article_document = {
         "chat_id": chat_id,
         "article_link": news_article_link,
@@ -56,7 +67,7 @@ def fetch_existing_news_article_document(chat_id, news_article_link, news_articl
 
 
 def add_infographic_to_article(database, chat_id, article_link, infographic_link):
-    news_articles_collection = database[config.DB_ARTICLES_COLLECTION_NAME]
+    news_articles_collection = database[db_articles_collection_name]
     query = {
         "chat_id": chat_id,
         "article_link": article_link
@@ -68,7 +79,7 @@ def add_infographic_to_article(database, chat_id, article_link, infographic_link
     }
     news_articles_collection.update_one(query, update)
 
-    infographics_collection = database[config.DB_INFOGRAPHICS_COLLECTION_NAME]
+    infographics_collection = database[db_infographics_collection_name]
     infographic_document = create_infographic_document(infographic_link)
     infographics_collection.insert_one(infographic_document)
 
@@ -85,7 +96,7 @@ def create_infographic_document(link_to_infographic):
 
 
 def check_if_infographic_link_exists(database, link_to_infographic):
-    infographics_collection = database[config.DB_INFOGRAPHICS_COLLECTION_NAME]
+    infographics_collection = database[db_infographics_collection_name]
     query = {
         "link_to_infographic": link_to_infographic
     }
@@ -97,7 +108,7 @@ def check_if_infographic_link_exists(database, link_to_infographic):
 
 
 def update_infographic_of_article(database, chat_id, old_infographic_link, new_infographic_link):
-    news_articles_collection = database[config.DB_ARTICLES_COLLECTION_NAME]
+    news_articles_collection = database[db_articles_collection_name]
     query = {
         "chat_id": chat_id,
         "link_to_infographic": old_infographic_link
@@ -109,13 +120,13 @@ def update_infographic_of_article(database, chat_id, old_infographic_link, new_i
     }
     news_articles_collection.update_one(query, update)
 
-    infographics_collection = database[config.DB_INFOGRAPHICS_COLLECTION_NAME]
+    infographics_collection = database[db_infographics_collection_name]
     infographic_document = create_infographic_document(new_infographic_link)
     infographics_collection.insert_one(infographic_document)
 
 
 def increase_share_count(database, link_to_infographic):
-    infographics_collection = database[config.DB_INFOGRAPHICS_COLLECTION_NAME]
+    infographics_collection = database[db_infographics_collection_name]
     query = {
         "link_to_infographic": link_to_infographic
     }
@@ -135,7 +146,7 @@ def increase_share_count(database, link_to_infographic):
 
 
 def increase_reliable_vote_count(database, link_to_infographic):
-    infographics_collection = database[config.DB_INFOGRAPHICS_COLLECTION_NAME]
+    infographics_collection = database[db_infographics_collection_name]
     query = {
         "link_to_infographic": link_to_infographic
     }
@@ -155,7 +166,7 @@ def increase_reliable_vote_count(database, link_to_infographic):
 
 
 def increase_unreliable_vote_count(database, link_to_infographic):
-    infographics_collection = database[config.DB_INFOGRAPHICS_COLLECTION_NAME]
+    infographics_collection = database[db_infographics_collection_name]
     query = {
         "link_to_infographic": link_to_infographic
     }
@@ -175,7 +186,7 @@ def increase_unreliable_vote_count(database, link_to_infographic):
 
 
 def get_infographic_document(database, link_to_infographic):
-    infographics_collection = database[config.DB_INFOGRAPHICS_COLLECTION_NAME]
+    infographics_collection = database[db_infographics_collection_name]
     query = {
         "link_to_infographic": link_to_infographic
     }
@@ -184,7 +195,7 @@ def get_infographic_document(database, link_to_infographic):
 
 
 def add_comment(database, link_to_infographic, comment):
-    infographics_collection = database[config.DB_INFOGRAPHICS_COLLECTION_NAME]
+    infographics_collection = database[db_infographics_collection_name]
     query = {
         "link_to_infographic": link_to_infographic
     }
@@ -205,7 +216,7 @@ def add_comment(database, link_to_infographic, comment):
 
 
 def assign_request_news_article(database, chat_id, article_link):
-    requests_collection = database[config.DB_REQUESTS_COLLECTION_NAME]
+    requests_collection = database[db_requests_collection_name]
     current_request_count = requests_collection.count_documents({})
     allocated_request_id = current_request_count + 1
     request_document = {
@@ -220,7 +231,7 @@ def assign_request_news_article(database, chat_id, article_link):
 
 
 def assign_request_infographic_changes(database, chat_id, infographic_link, user_instruction):
-    requests_collection = database[config.DB_REQUESTS_COLLECTION_NAME]
+    requests_collection = database[db_requests_collection_name]
     current_request_count = requests_collection.count_documents({})
     allocated_request_id = current_request_count + 1
     request_document = {
@@ -235,7 +246,7 @@ def assign_request_infographic_changes(database, chat_id, infographic_link, user
 
 
 def get_request(database, request_id):
-    requests_collection = database[config.DB_REQUESTS_COLLECTION_NAME]
+    requests_collection = database[db_requests_collection_name]
     query = {
         "request_id": request_id
     }

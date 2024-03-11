@@ -1,16 +1,24 @@
-import config
 import telebot
-import CommonDbOperations
-import ResponseHandler
 from flask import Flask, request
 from pyngrok import ngrok
-import KafkaEventHandler
+
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+bot_token = os.getenv("BOT_TOKEN")
+
+import sys
+sys.path.append('../')
+from Chatbot import CommonDbOperations, ResponseHandler
+from Kafka import KafkaEventHandler
 
 # Initialize Flask app
 app = Flask(__name__)
 
 # Initialise Telegram bot
-bot = telebot.TeleBot(config.BOT_TOKEN, parse_mode=None)
+bot = telebot.TeleBot(bot_token, parse_mode=None)
 
 database = None
 

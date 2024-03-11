@@ -1,4 +1,3 @@
-git+https://github.com/eCAPTION/ecaption_utils.git
 telebot
 flask
 pyngrok
@@ -7,4 +6,4 @@ requests
 pymongo
 black
 click
-kafka-python
+python-dotenv
