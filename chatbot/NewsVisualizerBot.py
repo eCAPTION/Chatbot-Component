@@ -103,12 +103,9 @@ def receive_news_article(message):
             reply_message = "You have already generated an infographic for this news article, where you can view it here: {}".format(link_to_infographic)
         bot.send_message(message.chat.id, reply_message)
     else:
-        print('Entered function')
         CommonDbOperations.create_news_article_document(database, message.chat.id, message.text)
         request_id = CommonDbOperations.assign_request_news_article(database, message.chat.id, message.text)
-        print('Before emitting')
         KafkaEventHandler.emit_article_url(message.text, request_id)
-        print('After emitting')
         reply_message = '\U000023F3' + ' Please wait patiently while I generate your infographic ' + '\U000023F3'
         bot.send_message(message.chat.id, reply_message)
 

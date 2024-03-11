@@ -15,6 +15,9 @@ services:
     build:
       context: .
       dockerfile: kafka_io_logic/Dockerfile
+    environment:
+      - KAFKA_SERVER=kafka
+      - KAFKA_PORT=9092
     depends_on:
       kafka:
         condition: service_healthy
@@ -44,6 +47,8 @@ services:
       retries: 10
     ports:
       - 29092:29092
+    expose:
+      - 29092
     networks:
       - chatbot-component
     environment:
@@ -52,6 +57,8 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_ADVERTISED_HOST_NAME: kafka:29092
 
 networks:
   chatbot-component:
