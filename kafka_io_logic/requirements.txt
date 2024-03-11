@@ -1,3 +1,10 @@
-git+https://github.com/eCAPTION/ecaption_utils.git
+https://github.com/eCAPTION/ecaption_utils/archive/refs/heads/main.zip
 kafka-python
 python-dotenv
+pyTelegramBotAPI
+flask
+Werkzeug==2.2.2
+pyngrok
+linetimer
+requests
+pymongo

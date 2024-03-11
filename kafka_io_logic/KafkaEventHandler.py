@@ -12,6 +12,7 @@ load_dotenv()
 
 faust_app_broker_url = os.getenv("FAUST_APP_BROKER_URL")
 chatbot_web_port = os.getenv("CHATBOT_WEB_PORT")
+bootstrap_server = os.getenv("BOOTSTRAP_SERVER")
 
 app = get_faust_app(FaustApplication.Chatbot, faust_app_broker_url, chatbot_web_port)
 topics = initialize_topics(
@@ -37,8 +38,12 @@ def emit_article_url(article_url, request_id):
     faust_value = '"__faust":{' + faust_ns_value + '}'
     value = '{' + f'"url":"{article_url}","request_id":{request_id},{faust_value}' + '}'
 
-    producer = KafkaProducer(bootstrap_servers='localhost:9092')
+    print('Received article URL!')
+    print(value)
+    producer = KafkaProducer(bootstrap_servers='localhost:29092')
+    print('Initialized Producer')
     producer.send("new_article_url", str.encode(value))
+    print('Sent article URL!')
     producer.close()
 
 
@@ -62,7 +67,7 @@ def emit_add_intermediate_representation(target_element, infographic_section, in
     faust_value = '"__faust":{' + faust_ns_value + '}'
     value = '{' + f'"request_id":{request_id},"infographic_link":"{infographic_link}","target_element":"{target_element}","infographic_section":"{infographic_section}",{faust_value}' + '}'
 
-    producer = KafkaProducer(bootstrap_servers='localhost:9092')
+    producer = KafkaProducer(bootstrap_servers=bootstrap_server)
     producer.send(topic.value, str.encode(value))
     producer.close()
 
@@ -77,7 +82,7 @@ def emit_delete_intermediate_representation(infographic_section, infographic_lin
     faust_value = '"__faust":{' + faust_ns_value + '}'
     value = '{' + f'"request_id":{request_id},"infographic_link":"{infographic_link}","infographic_section":"{infographic_section}",{faust_value}' + '}'
 
-    producer = KafkaProducer(bootstrap_servers='localhost:9092')
+    producer = KafkaProducer(bootstrap_servers=bootstrap_server)
     producer.send(topic.value, str.encode(value))
     producer.close()
 
@@ -106,4 +111,12 @@ async def handle_modified_infographic(event_stream):
         request_id = event.request_id
         new_infographic_link = event.new_infographic_link
         NewsVisualizerBot.send_modified_infographic(request_id, new_infographic_link)
+
+@app.agent(topics[Topic.NEW_ARTICLE_URL])
+async def handle_article_url(event_stream):
+     async for event in event_stream:
+         article_text = event.url
+         print(f'This is the article text: {article_text}')
+         request_id = event.request_id
+         print(f'This is the request ID: {request_id}')
 

@@ -1,9 +1,9 @@
-telebot
+https://github.com/eCAPTION/ecaption_utils/archive/refs/heads/main.zip
+pyTelegramBotAPI
 flask
+Werkzeug==2.2.2
 pyngrok
 linetimer
 requests
 pymongo
-black
-click
 python-dotenv
