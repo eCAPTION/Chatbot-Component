@@ -11,8 +11,8 @@ bot_token = os.getenv("BOT_TOKEN")
 
 import sys
 sys.path.append('../')
-from Chatbot import CommonDbOperations, ResponseHandler
-from Kafka import KafkaEventHandler
+from chatbot import CommonDbOperations, ResponseHandler
+from kafka_io_logic import KafkaEventHandler
 
 # Initialize Flask app
 app = Flask(__name__)

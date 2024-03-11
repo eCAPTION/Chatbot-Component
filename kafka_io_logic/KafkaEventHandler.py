@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import os
 import sys
 sys.path.append('../')
-from Chatbot import NewsVisualizerBot
+from chatbot import NewsVisualizerBot
 
 load_dotenv()
 
