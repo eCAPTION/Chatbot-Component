@@ -4,9 +4,6 @@
 # Ignore Python intepreter-related files
 __pycache__
 
-# Ignore git-crypt-key
-git-crypt-key
-
 # Ignore ecaption_utils files
 ecaption_utils_personal
 
