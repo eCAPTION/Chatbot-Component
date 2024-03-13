@@ -11,6 +11,9 @@ target_element_add_api_url = os.getenv("TARGET_ELEMENT_NEW_API_URL")
 target_location_add_api_url = os.getenv("TARGET_LOCATION_NEW_API_URL")
 target_element_delete_api_url = os.getenv("TARGET_ELEMENT_NEW_DELETE_API_URL")
 infographic_section_api_url = os.getenv("INFOGRAPHIC_SECTION_NEW_API_URL")
+target_element_move_api_url = os.getenv("TARGET_ELEMENT_NEW_MOVE_API_URL")
+reference_element_move_api_url = os.getenv("REFERENCE_ELEMENT_NEW_MOVE_API_URL")
+direction_move_api_url = os.getenv("DIRECTION_NEW_MOVE_API_URL")
 
 
 def identify_instruction_type(instruction):
@@ -89,7 +92,6 @@ def identify_target_element_delete(instruction):
             },
         })
 
-    print(output_target_element)
     target_element = output_target_element[0]['generated_text']
     return target_element
 
@@ -124,6 +126,66 @@ def remove_quotes(string):
         return string
 
 
+def identify_target_element_move(instruction):
+    with CodeTimer('Identify Target Element', unit='s'):
+        headers = {"Authorization": f"Bearer {huggingface_access_token}"}
+
+        def query(payload):
+            response = requests.post(target_element_move_api_url, headers=headers, json=payload)
+            return response.json()
+
+        prompt_target_element = f'Given the instruction, ({instruction}) Output the target element the user wants to move in this infographic.'
+        output_target_element = query({
+            "inputs": prompt_target_element,
+            "options": {
+                "wait_for_model": True
+            },
+        })
+
+    target_element = output_target_element[0]['generated_text']
+    return target_element
+
+
+def identify_reference_element_move(instruction):
+    with CodeTimer('Identify Reference Element', unit='s'):
+        headers = {"Authorization": f"Bearer {huggingface_access_token}"}
+
+        def query(payload):
+            response = requests.post(reference_element_move_api_url, headers=headers, json=payload)
+            return response.json()
+
+        prompt_reference_element = f'Given the instruction, ({instruction}) Output the reference element the user wants to position the target element in relation to.'
+        output_reference_element = query({
+            "inputs": prompt_reference_element,
+            "options": {
+                "wait_for_model": True
+            },
+        })
+
+    reference_element = output_reference_element[0]['generated_text']
+    return reference_element
+
+
+def identify_direction_move(instruction):
+    with CodeTimer('Identify Direction', unit='s'):
+        headers = {"Authorization": f"Bearer {huggingface_access_token}"}
+
+        def query(payload):
+            response = requests.post(direction_move_api_url, headers=headers, json=payload)
+            return response.json()
+
+        prompt_direction = f'Given the instruction, ({instruction}) Identify the direction in which the user wants to move the target element relative to the reference element: above/below/left/right'
+        output_direction = query({
+            "inputs": prompt_direction,
+            "options": {
+                "wait_for_model": True
+            },
+        })
+
+    direction = output_direction[0]['generated_text']
+    return direction
+
+
 def generate_intermediate_representation(instruction):
     instruction_type = identify_instruction_type(instruction)
     intermediate_representation = {}
@@ -142,6 +204,18 @@ def generate_intermediate_representation(instruction):
         intermediate_representation = {
             'instruction_type': instruction_type,
             'infographic_section': infographic_section,
+        }
+    elif instruction_type == 'MOVE':
+        target_element = identify_target_element_move(instruction)
+        target_infographic_section = identify_infographic_section_new(target_element)
+        reference_element = identify_reference_element_move(instruction)
+        reference_infographic_section = identify_infographic_section_new(reference_element)
+        direction = identify_direction_move(instruction)
+        intermediate_representation = {
+            'instruction_type': instruction_type,
+            'target_section': target_infographic_section,
+            'reference_section': reference_infographic_section,
+            'direction': direction
         }
     return intermediate_representation
 

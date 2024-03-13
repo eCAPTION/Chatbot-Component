@@ -21,6 +21,7 @@ topics = initialize_topics(
         Topic.NEW_ARTICLE_URL,
         Topic.ADD_INSTRUCTION,
         Topic.DELETE_INSTRUCTION,
+        Topic.MOVE_INSTRUCTION,
         Topic.NEW_INFOGRAPHIC,
         Topic.MODIFIED_INFOGRAPHIC,
         Topic.ERROR,
@@ -51,6 +52,11 @@ def emit_intermediate_representation(intermediate_representation, infographic_li
     elif intermediate_representation['instruction_type'] == 'DELETE':
         emit_delete_intermediate_representation(intermediate_representation['infographic_section'],
                                                 infographic_link, request_id)
+    elif intermediate_representation['instruction_type'] == 'MOVE':
+        emit_move_intermediate_representation(intermediate_representation['target_section'],
+                                              intermediate_representation['reference_section'],
+                                              intermediate_representation['direction'],
+                                              infographic_link, request_id)
 
 
 def emit_add_intermediate_representation(target_element, infographic_section, infographic_link, request_id):
@@ -77,6 +83,21 @@ def emit_delete_intermediate_representation(infographic_section, infographic_lin
     faust_ns_value = f'"ns":"{class_name}"'
     faust_value = '"__faust":{' + faust_ns_value + '}'
     value = '{' + f'"request_id":{request_id},"infographic_link":"{infographic_link}","infographic_section":"{infographic_section}",{faust_value}' + '}'
+
+    producer = KafkaProducer(bootstrap_servers=bootstrap_server)
+    producer.send(topic.value, str.encode(value))
+    producer.close()
+
+
+def emit_move_intermediate_representation(target_section, reference_section, direction, infographic_link, request_id):
+    topic = Topic.MOVE_INSTRUCTION
+    Event = get_event_type(topic)
+    pattern = r'\'(.*?)\''
+    matches = re.findall(pattern, str(Event))
+    class_name = matches[0]
+    faust_ns_value = f'"ns":"{class_name}"'
+    faust_value = '"__faust":{' + faust_ns_value + '}'
+    value = '{' + f'"request_id":{request_id},"infographic_link":"{infographic_link}","target_section":"{target_section}","reference_section":"{reference_section}","direction":"{direction}",{faust_value}' + '}'
 
     producer = KafkaProducer(bootstrap_servers=bootstrap_server)
     producer.send(topic.value, str.encode(value))
