@@ -46,8 +46,11 @@ def emit_article_url(article_url, request_id):
 
 def emit_intermediate_representation(intermediate_representation, infographic_link, request_id):
     if intermediate_representation['instruction_type'] == 'ADD':
+        # emit_add_intermediate_representation(intermediate_representation['target_element'],
+        #                                      intermediate_representation['infographic_section'],
+        #                                      infographic_link, request_id)
         emit_add_intermediate_representation(intermediate_representation['target_element'],
-                                             intermediate_representation['infographic_section'],
+                                             '',
                                              infographic_link, request_id)
     elif intermediate_representation['instruction_type'] == 'DELETE':
         emit_delete_intermediate_representation(intermediate_representation['infographic_section'],
