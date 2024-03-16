@@ -116,7 +116,7 @@ def identify_infographic_section_new(location):
             },
         })
 
-    return remove_quotes(output_infographic_section['answer'])
+    return remove_quotes_again(remove_quotes(output_infographic_section['answer']))
 
 
 def remove_quotes(string):
@@ -124,6 +124,15 @@ def remove_quotes(string):
         return string[2:-1]
     else:
         return string
+
+
+def remove_quotes_again(string):
+    opening_index = string.find('\'')
+    closing_index = string.rfind('\'')
+    if opening_index == -1 or closing_index == -1 or opening_index > closing_index:
+        return string
+    else:
+        return string[opening_index + 1:closing_index]
 
 
 def identify_target_element_move(instruction):
