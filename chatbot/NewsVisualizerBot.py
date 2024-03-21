@@ -191,7 +191,7 @@ def send_new_infographic(request_id, infographic_link):
     chat_id = request_document["chat_id"]
     article_link = request_document["article_link"]
     CommonDbOperations.add_infographic_to_article(database, chat_id, article_link, infographic_link)
-    reply_message = f"Great news! I've finished generating the infographic based on the news article ({article_link}) you linked.\nYou can check it out here: {infographic_link}"
+    reply_message = f"Great news! I've finished generating the infographic based on the news article ({article_link}) you have sent.\nYou can check it out here: {infographic_link}"
     bot.send_message(chat_id, reply_message)
 
 def send_modified_infographic(request_id, infographic_link):
