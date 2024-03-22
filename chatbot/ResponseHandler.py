@@ -220,6 +220,10 @@ def generate_intermediate_representation(instruction):
         reference_element = identify_reference_element_move(instruction)
         reference_infographic_section = identify_infographic_section_new(reference_element)
         direction = identify_direction_move(instruction)
+        if direction == 'above':
+            direction = 'top'
+        elif direction == 'below':
+            direction = 'bottom'
         intermediate_representation = {
             'instruction_type': instruction_type,
             'target_section': target_infographic_section,
