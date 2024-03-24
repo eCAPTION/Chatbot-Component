@@ -200,11 +200,12 @@ def generate_intermediate_representation(instruction):
     intermediate_representation = {}
     if instruction_type == 'ADD':
         target_element = identify_target_element_add(instruction)
+        target_section = identify_infographic_section_new(target_element)
         # target_location = identify_target_location_add(instruction)
         # infographic_section = identify_infographic_section_new(target_location)
         intermediate_representation = {
             'instruction_type': instruction_type,
-            'target_element': target_element,
+            'target_element': target_section,
             # 'infographic_section': infographic_section,
         }
     elif instruction_type == 'DELETE':
