@@ -12,3 +12,4 @@ MiddleMan.py
 
 # Ignore .env files
 .env
+.env.docker
